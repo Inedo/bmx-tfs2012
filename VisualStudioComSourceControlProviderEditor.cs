@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Web.UI.WebControls;
 using Inedo.BuildMaster.Extensibility.Providers;
 using Inedo.BuildMaster.Web.Controls;
 using Inedo.BuildMaster.Web.Controls.Extensions;
@@ -11,6 +12,7 @@ namespace Inedo.BuildMasterExtensions.TFS2012
         private ValidatingTextBox txtBaseUrl;
         private ValidatingTextBox txtUserName;
         private PasswordTextBox txtPassword;
+        private CheckBox chkBasicAuthentication;
 
         public VisualStudioComSourceControlProviderEditor()
         {
@@ -25,6 +27,7 @@ namespace Inedo.BuildMasterExtensions.TFS2012
             this.txtBaseUrl.Text = tfsProvider.BaseUrl;
             this.txtUserName.Text = tfsProvider.UserName;
             this.txtPassword.Text = tfsProvider.Password;
+            this.chkBasicAuthentication.Checked = tfsProvider.UseBasicAuthentication;
         }
         public override ProviderBase CreateFromForm()
         {
@@ -34,7 +37,8 @@ namespace Inedo.BuildMasterExtensions.TFS2012
             {
                 BaseUrl = this.txtBaseUrl.Text,
                 UserName = this.txtUserName.Text,
-                Password = this.txtPassword.Text
+                Password = this.txtPassword.Text,
+                UseBasicAuthentication = this.chkBasicAuthentication.Checked
             };
         }
 
@@ -43,6 +47,7 @@ namespace Inedo.BuildMasterExtensions.TFS2012
             this.txtBaseUrl = new ValidatingTextBox { Width = 300, Required = true };
             this.txtUserName = new ValidatingTextBox { Width = 300, Required = true };
             this.txtPassword = new PasswordTextBox { Width = 270, Required = true };
+            this.chkBasicAuthentication = new CheckBox { Text = "Use Basic Authentication", Checked = true };
 
             this.Controls.Add(
                 new FormFieldGroup(
@@ -53,10 +58,11 @@ namespace Inedo.BuildMasterExtensions.TFS2012
                 ),
                 new FormFieldGroup(
                     "Credentials",
-                    "Specify the service account credentials to use to connect to the server.",
-                    true,
+                    "Specify the service account credentials to use to connect to the server. See <a href=\"http://blogs.msdn.com/b/buckh/archive/2013/01/07/how-to-connect-to-tf-service-without-a-prompt-for-liveid-credentials.aspx\">this article</a> for how to configure TFS to allow basic authentication.",
+                    false,
                     new StandardFormField("User Name:", this.txtUserName),
-                    new StandardFormField("Password:", this.txtPassword)
+                    new StandardFormField("Password:", this.txtPassword),
+                    new StandardFormField(string.Empty, this.chkBasicAuthentication)
                 )
             );
         }
