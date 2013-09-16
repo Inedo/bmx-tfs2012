@@ -9,7 +9,8 @@ namespace Inedo.BuildMasterExtensions.TFS2012
 {
     [ProviderProperties(
         "VisualStudio.com",
-        "Hosted TFS on visualstudio.com; requires that Visual Studio Team System (or greater) 2012 is installed.")]
+        "Hosted TFS on visualstudio.com; requires that Visual Studio Team System (or greater) 2012 is installed.",
+        RequiresTransparentProxy = true)]
     [CustomEditor(typeof(VisualStudioComSourceControlProviderEditor))]
     public sealed class VisualStudioComSourceControlProvider : TfsSourceControlProvider
     {
