@@ -278,7 +278,7 @@ namespace Inedo.BuildMasterExtensions.TFS2012
         /// <returns>
         /// A representation of the current revision in source control.
         /// </returns>
-        public byte[] GetCurrentRevision(string path)
+        public object GetCurrentRevision(string path)
         {
             var sourcePath = BuildSourcePath(path);
 
@@ -295,7 +295,7 @@ namespace Inedo.BuildMasterExtensions.TFS2012
                     return new byte[0];
 
                 // return the highest change set id
-                return BitConverter.GetBytes(items.Items.Max(i => i.ChangesetId));
+                return items.Items.Max(i => i.ChangesetId);
             }
         }
 
