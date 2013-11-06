@@ -35,7 +35,7 @@ namespace Inedo.BuildMasterExtensions.TFS2012
                 "Actions in this group will start a build in TFS and import it into BuildMaster as an artifact."
             );
 
-            Util.Recipes.AddAction(planId, new CreateTfsBuildAction()
+            Util.Recipes.AddAction(planId, 1, new CreateTfsBuildAction()
                 {
                     TeamProject = this.TeamProject,
                     BuildDefinition = this.BuildDefinition,
@@ -43,7 +43,7 @@ namespace Inedo.BuildMasterExtensions.TFS2012
                 }
             );
 
-            Util.Recipes.AddAction(planId, new CreateTfsBuildOutputArtifactAction()
+            Util.Recipes.AddAction(planId, 1, new CreateTfsBuildOutputArtifactAction()
                 {
                     TeamProject = this.TeamProject,
                     BuildDefinition = this.BuildDefinition,
