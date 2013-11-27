@@ -5,7 +5,7 @@ using Microsoft.TeamFoundation.WorkItemTracking.Client;
 namespace Inedo.BuildMasterExtensions.TFS2012
 {
     [Serializable]
-    internal sealed class Tfs2010Issue : Issue
+    internal sealed class Tfs2010Issue : IssueTrackerIssue
     {
         public static class DefaultStatusNames
         {
@@ -15,15 +15,16 @@ namespace Inedo.BuildMasterExtensions.TFS2012
         }
 
         public Tfs2010Issue(WorkItem workItem, string customReleaseNumberFieldName)
+            : base(workItem.Id.ToString(), workItem.State, workItem.Title, workItem.Description, GetReleaseNumber(workItem, customReleaseNumberFieldName))
         {
-            this.IssueDescription = workItem.Description;
-            this.IssueId = workItem.Id.ToString();
-            this.IssueStatus = workItem.State;
-            this.IssueTitle = workItem.Title;
-            if (String.IsNullOrEmpty(customReleaseNumberFieldName))
-                this.ReleaseNumber = workItem.IterationPath.Substring(workItem.IterationPath.LastIndexOf('\\') + 1);
+        }
+
+        private static string GetReleaseNumber(WorkItem workItem, string customReleaseNumberFieldName)
+        {
+            if (string.IsNullOrEmpty(customReleaseNumberFieldName))
+                return workItem.IterationPath.Substring(workItem.IterationPath.LastIndexOf('\\') + 1);
             else
-                this.ReleaseNumber = workItem.Fields[customReleaseNumberFieldName].Value.ToString().Trim();
+                return workItem.Fields[customReleaseNumberFieldName].Value.ToString().Trim();
         }
     }
 }

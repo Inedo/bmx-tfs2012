@@ -16,7 +16,8 @@ namespace Inedo.BuildMasterExtensions.TFS2012
     /// </summary>
     [ProviderProperties(
         "Team Foundation Server (2012)",
-        "Supports TFS 2012 and earlier; requires that Visual Studio Team System (or greater) 2012 is installed.")]
+        "Supports TFS 2012 and earlier; requires that Visual Studio Team System (or greater) 2012 is installed.",
+        RequiresTransparentProxy = true)]
     [CustomEditor(typeof(Tfs2012IssueTrackingProviderEditor))]
     public class Tfs2012IssueTrackingProvider : IssueTrackingProviderBase, ICategoryFilterable, IUpdatingProvider
     {
@@ -86,19 +87,6 @@ namespace Inedo.BuildMasterExtensions.TFS2012
             get { return new Uri(BaseUrl); }
         }
 
-        ///// <summary>
-        ///// Gets the URI of the TFS Team Project collection that will be queried
-        ///// </summary>
-        //private Uri CollectionUri
-        //{
-        //    get
-        //    {
-        //        char separatorChar = this.BaseUrl.Contains("\\") ? '\\' : '/';
-        //        string collectionName = (this.CategoryIdFilter.Length > 0) ? this.CategoryIdFilter[0] : "";
-        //        return new Uri(this.BaseUrl.TrimEnd(separatorChar) + separatorChar + collectionName);
-        //    }
-        //}
-
         /// <summary>
         /// Gets a URL to the specified issue.
         /// </summary>
@@ -106,7 +94,7 @@ namespace Inedo.BuildMasterExtensions.TFS2012
         /// <returns>
         /// The URL of the specified issue if applicable; otherwise null.
         /// </returns>
-        public override string GetIssueUrl(Issue issue)
+        public override string GetIssueUrl(IssueTrackerIssue issue)
         {
             return CombinePaths(this.BaseUri.ToString(), string.Format(WorkItemUrlFormat, issue.IssueId));
         }
@@ -115,7 +103,7 @@ namespace Inedo.BuildMasterExtensions.TFS2012
         /// release
         /// </summary>
         /// <param name="releaseNumber">The release number from which the issues should be retrieved</param>
-        public override Issue[] GetIssues(string releaseNumber)
+        public override IssueTrackerIssue[] GetIssues(string releaseNumber)
         {
             bool filterByProject = CategoryIdFilter.Length == 2 && !string.IsNullOrEmpty(CategoryIdFilter[1]);
 
@@ -137,7 +125,7 @@ namespace Inedo.BuildMasterExtensions.TFS2012
                         : ", [" + this.CustomReleaseNumberFieldName + "]",
                     string.IsNullOrEmpty(this.CustomReleaseNumberFieldName)
                         ? ""
-                        : String.Format("WHERE [{0}] = '{1}'", this.CustomReleaseNumberFieldName, releaseNumber),
+                        : string.Format("WHERE [{0}] = '{1}'", this.CustomReleaseNumberFieldName, releaseNumber),
                     filterByProject
                     ? string.Format("{1} [System.TeamProject] = '{0}'", CategoryIdFilter[1], string.IsNullOrEmpty(this.CustomReleaseNumberFieldName) ? "WHERE" : "AND")
                        : ""
@@ -155,7 +143,7 @@ namespace Inedo.BuildMasterExtensions.TFS2012
         /// Determines if the specified issue is closed
         /// </summary>
         /// <param name="issue">The issue to determine closed status</param>
-        public override bool IsIssueClosed(Issue issue)
+        public override bool IsIssueClosed(IssueTrackerIssue issue)
         {
             return issue.IssueStatus == Tfs2010Issue.DefaultStatusNames.Closed || issue.IssueStatus == Tfs2010Issue.DefaultStatusNames.Resolved;
         }
@@ -202,7 +190,7 @@ namespace Inedo.BuildMasterExtensions.TFS2012
         /// The nesting level (i.e. <see cref="CategoryBase.SubCategories"/>) can never be less than
         /// the length of <see cref="CategoryTypeNames"/>
         /// </remarks>
-        public CategoryBase[] GetCategories()
+        public IssueTrackerCategory[] GetCategories()
         {
             // transform collection names from TFS SDK format to BuildMaster's CategoryBase object
             using (var tfs = this.GetTeamProjectCollection())
@@ -266,16 +254,6 @@ namespace Inedo.BuildMasterExtensions.TFS2012
                 var projectColleciton = new TfsTeamProjectCollection(this.BaseUri, new TfsClientCredentials(new WindowsCredential(new NetworkCredential(this.UserName, this.Password, this.Domain))));
                 projectColleciton.EnsureAuthenticated();
                 return projectColleciton;
-
-                //var tfs = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(this.BaseUri);
-                //var webCreds = new SimpleWebTokenCredential(this.UserName, this.Password);
-                //tfs.ClientCredentials = new TfsClientCredentials(webCreds);
-                //tfs.EnsureAuthenticated();
-                ////var creds = new TfsClientCredentials(new WindowsCredential(new NetworkCredential(this.UserName, this.Password), new rubbshclass()));
-                ////var tfs = new TfsTeamProjectCollection(this.BaseUri, new NetworkCredential(this.UserName, this.Password), new rubbshclass());
-                //return tfs.GetService<VersionControlServer>();
-                ////return new TeamFoundationServer(this.BaseUri, new NetworkCredential(this.UserName, this.Password, this.Domain))
-                ////    .GetService<VersionControlServer>();
             }
         }
 
@@ -285,9 +263,7 @@ namespace Inedo.BuildMasterExtensions.TFS2012
         /// <param name="workItemID">The work item ID.</param>
         private WorkItem GetWorkItemByID(WorkItemStore store, string workItemID)
         {
-            //WorkItemStore store = this.TfsServer.GetService<WorkItemStore>();
-
-            string wiql = String.Format(@"SELECT [System.ID], 
+            var wiql = String.Format(@"SELECT [System.ID], 
                                 [System.Title], 
                                 [System.Description], 
                                 [System.State] 
@@ -312,8 +288,7 @@ namespace Inedo.BuildMasterExtensions.TFS2012
         /// <param name="args">The arguments for the format string</param>
         private WorkItemCollection GetWorkItemCollection(WorkItemStore store, string wiqlQueryFormat, params object[] args)
         {
-            //WorkItemStore store = this.TfsServer.GetService<WorkItemStore>();
-            string wiql = String.Format(wiqlQueryFormat, args);
+            var wiql = string.Format(wiqlQueryFormat, args);
             
             return store.Query(wiql);
         }

@@ -72,14 +72,14 @@ namespace Inedo.BuildMasterExtensions.TFS2012
             Uri uri;
             if (!Uri.TryCreate(this.txtBaseUrl.Text, UriKind.Absolute, out uri))
             {
-                e.ValidLevel = ValidationLevels.Error;
+                e.ValidLevel = ValidationLevel.Error;
                 e.Message = string.Format("{0} is not a valid URL.", this.txtBaseUrl.Text);
                 return;
             }
 
             if (uri.Host.IndexOf("visualstudio.com", StringComparison.OrdinalIgnoreCase) < 0)
             {
-                e.ValidLevel = ValidationLevels.Warning;
+                e.ValidLevel = ValidationLevel.Warning;
                 e.Message = "This provider is only intended for use with TFS hosted at visualstudio.com";
                 return;
             }

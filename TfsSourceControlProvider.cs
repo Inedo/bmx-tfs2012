@@ -15,9 +15,10 @@ namespace Inedo.BuildMasterExtensions.TFS2012
 {
     [ProviderProperties(
         "Team Foundation Server (2012)",
-        "Supports TFS 2012 and earlier; requires that Visual Studio Team System (or greater) 2012 is installed.")]
+        "Supports TFS 2012 and earlier; requires that Visual Studio Team System (or greater) 2012 is installed.",
+        RequiresTransparentProxy = true)]
     [CustomEditor(typeof(TfsSourceControlProviderEditor))]
-    public class TfsSourceControlProvider : SourceControlProviderBase, IVersioningProvider, IRevisionProvider
+    public class TfsSourceControlProvider : SourceControlProviderBase, ILabelingProvider, IRevisionProvider
     {
         private const string EmptyPathString = "$/";
         private static readonly string WorkspaceName = "BuildMaster" + Environment.MachineName;
@@ -316,16 +317,6 @@ namespace Inedo.BuildMasterExtensions.TFS2012
                 var projectColleciton = new TfsTeamProjectCollection(this.BaseUri, new TfsClientCredentials(new WindowsCredential(new NetworkCredential(this.UserName, this.Password, this.Domain))));
                 projectColleciton.EnsureAuthenticated();
                 return projectColleciton;
-
-                //var tfs = TfsTeamProjectCollectionFactory.GetTeamProjectCollection(this.BaseUri);
-                //var webCreds = new SimpleWebTokenCredential(this.UserName, this.Password);
-                //tfs.ClientCredentials = new TfsClientCredentials(webCreds);
-                //tfs.EnsureAuthenticated();
-                ////var creds = new TfsClientCredentials(new WindowsCredential(new NetworkCredential(this.UserName, this.Password), new rubbshclass()));
-                ////var tfs = new TfsTeamProjectCollection(this.BaseUri, new NetworkCredential(this.UserName, this.Password), new rubbshclass());
-                //return tfs.GetService<VersionControlServer>();
-                ////return new TeamFoundationServer(this.BaseUri, new NetworkCredential(this.UserName, this.Password, this.Domain))
-                ////    .GetService<VersionControlServer>();
             }
         }
 

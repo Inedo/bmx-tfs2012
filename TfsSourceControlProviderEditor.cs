@@ -42,7 +42,7 @@ namespace Inedo.BuildMasterExtensions.TFS2012
 
             CUtil.Add(this,
                 new FormFieldGroup("TFS Server Name",
-                    "The name of the Team Foundation Server to connect to <div class=\"smallText\">something like http://tfsserver:8080</div>",
+                    "The name of the Team Foundation Server to connect to, e.g. http://tfsserver:8080/tfs",
                     false,
                     new StandardFormField(
                         "Server Name:",
