@@ -21,15 +21,12 @@ namespace Inedo.BuildMasterExtensions.TFS2012
     [CustomEditor(typeof(Tfs2012IssueTrackingProviderEditor))]
     public class Tfs2012IssueTrackingProvider : IssueTrackingProviderBase, ICategoryFilterable, IUpdatingProvider
     {
-        private const string WorkItemUrlFormat = "/web/UI/Pages/WorkItems/WorkItemEdit.aspx?id={0}";
-
         /// <summary>
         /// Initializes a new instance of the Tfs2012IssueTrackingProvider class.
         /// </summary>
         public Tfs2012IssueTrackingProvider()
         {
         }
-
         /// <summary>
         /// The base URL of the TFS store, should include collection name, e.g. "http://server:port/tfs"
         /// </summary>
@@ -76,7 +73,7 @@ namespace Inedo.BuildMasterExtensions.TFS2012
         public string[] CategoryIdFilter { get; set; }
         public string[] CategoryTypeNames
         {
-            get { return new[] { "Collection", "Project" }; }
+            get { return new[] { "Collection", "Project", "Area Path" }; }
         }
 
         /// <summary>
@@ -96,7 +93,13 @@ namespace Inedo.BuildMasterExtensions.TFS2012
         /// </returns>
         public override string GetIssueUrl(IssueTrackerIssue issue)
         {
-            return CombinePaths(this.BaseUri.ToString(), string.Format(WorkItemUrlFormat, issue.IssueId));
+            using (var teamProjectCollection = this.GetTeamProjectCollection())
+            {
+                var hyperlinkService = teamProjectCollection.GetService<TswaClientHyperlinkService>();
+                var workItemUrl = hyperlinkService.GetWorkItemEditorUrl(Convert.ToInt32(issue.IssueId)).AbsoluteUri;
+
+                return workItemUrl;
+            }
         }
         /// <summary>
         /// Gets an array of <see cref="Issue"/> objects that are for the current
@@ -105,7 +108,8 @@ namespace Inedo.BuildMasterExtensions.TFS2012
         /// <param name="releaseNumber">The release number from which the issues should be retrieved</param>
         public override IssueTrackerIssue[] GetIssues(string releaseNumber)
         {
-            bool filterByProject = CategoryIdFilter.Length == 2 && !string.IsNullOrEmpty(CategoryIdFilter[1]);
+            bool filterByProject = CategoryIdFilter.Length >= 2 && !string.IsNullOrEmpty(CategoryIdFilter[1]);
+            bool filterByAreaPath = CategoryIdFilter.Length == 3 && !string.IsNullOrEmpty(CategoryIdFilter[2]);
 
             using (var tfs = this.GetTeamProjectCollection())
             {
@@ -114,11 +118,13 @@ namespace Inedo.BuildMasterExtensions.TFS2012
                     @"SELECT [System.ID], 
                     [System.Title], 
                     [System.Description], 
-                    [System.State] 
+                    [System.State],
+                    [System.AreaPath] 
                     {0}
                     FROM WorkItems 
                     {1}
                     {2}
+                    {3}
                     ORDER BY [System.ID] ASC",
                     string.IsNullOrEmpty(this.CustomReleaseNumberFieldName)
                         ? ""
@@ -127,8 +133,11 @@ namespace Inedo.BuildMasterExtensions.TFS2012
                         ? ""
                         : string.Format("WHERE [{0}] = '{1}'", this.CustomReleaseNumberFieldName, releaseNumber),
                     filterByProject
-                    ? string.Format("{1} [System.TeamProject] = '{0}'", CategoryIdFilter[1], string.IsNullOrEmpty(this.CustomReleaseNumberFieldName) ? "WHERE" : "AND")
-                       : ""
+                        ? string.Format("{1} [System.TeamProject] = '{0}'", CategoryIdFilter[1], string.IsNullOrEmpty(this.CustomReleaseNumberFieldName) ? "WHERE" : "AND")
+                        : "",
+                    filterByAreaPath
+                        ? string.Format("AND [System.AreaPath] under '{0}'", CategoryIdFilter[2])
+                        : ""
                 );
 
                 // transform work items returned by SDK into BuildMaster's issues array type
@@ -269,16 +278,16 @@ namespace Inedo.BuildMasterExtensions.TFS2012
                                 [System.State] 
                                 {0} 
                             FROM WorkItems 
-                            WHERE [System.ID] = '{1}'", 
+                            WHERE [System.ID] = '{1}'",
                             String.IsNullOrEmpty(this.CustomReleaseNumberFieldName)
                              ? ""
-                             : ", [" + this.CustomReleaseNumberFieldName + "]", 
+                             : ", [" + this.CustomReleaseNumberFieldName + "]",
                             workItemID);
             var workItemCollection = store.Query(wiql);
 
             if (workItemCollection.Count == 0) throw new Exception("There is no work item with the ID: " + workItemID);
             if (workItemCollection.Count > 1) throw new Exception("There are multiple issues with the same ID: " + workItemID);
-            
+
             return workItemCollection[0];
         }
         /// <summary>
@@ -289,12 +298,8 @@ namespace Inedo.BuildMasterExtensions.TFS2012
         private WorkItemCollection GetWorkItemCollection(WorkItemStore store, string wiqlQueryFormat, params object[] args)
         {
             var wiql = string.Format(wiqlQueryFormat, args);
-            
+
             return store.Query(wiql);
-        }
-        private static string CombinePaths(string baseUrl, string relativeUrl)
-        {
-            return baseUrl.TrimEnd('/') + "/" + relativeUrl.TrimStart('/');
         }
         /// <summary>
         /// Gets the project categories.
