@@ -37,8 +37,6 @@ namespace Inedo.BuildMasterExtensions.TFS2012
         /// </summary>
         [Persistent]
         public string CustomReleaseNumberFieldName { get; set; }
-        //[Persistent]
-        //public string AreaPath { get; set; }
         /// <summary>
         /// The username used to connect to the server
         /// </summary>
