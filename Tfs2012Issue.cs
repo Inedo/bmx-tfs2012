@@ -24,7 +24,7 @@ namespace Inedo.BuildMasterExtensions.TFS2012
             if (string.IsNullOrEmpty(customReleaseNumberFieldName))
                 return workItem.IterationPath + @"\"; // Add a backslash to the end of the iteration path in case our release number shows up at the end.
             else
-                return workItem.Fields[customReleaseNumberFieldName].Value.ToString().Trim();
+                return @"\" + workItem.Fields[customReleaseNumberFieldName].Value.ToString().Trim() + @"\";
         }
     }
 }
