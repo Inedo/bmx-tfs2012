@@ -144,7 +144,7 @@ namespace Inedo.BuildMasterExtensions.TFS2012
                 return workItems
                     .Cast<WorkItem>()
                     .Select(wi => new Tfs2010Issue(wi, this.CustomReleaseNumberFieldName))
-                    .Where(wi => wi.ReleaseNumber == releaseNumber)
+                    .Where(wi => wi.ReleaseNumber.Contains(@"\" + releaseNumber)) // Add backslash to the beginning so we don't match on things like 1.0.0 and 11.0.0.
                     .ToArray();
             }
         }
