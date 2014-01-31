@@ -22,7 +22,7 @@ namespace Inedo.BuildMasterExtensions.TFS2012
         private static string GetReleaseNumber(WorkItem workItem, string customReleaseNumberFieldName)
         {
             if (string.IsNullOrEmpty(customReleaseNumberFieldName))
-                return workItem.IterationPath.Substring(workItem.IterationPath.LastIndexOf('\\') + 1);
+                return workItem.IterationPath + @"\"; // Add a backslash to the end of the iteration path in case our release number shows up at the end.
             else
                 return workItem.Fields[customReleaseNumberFieldName].Value.ToString().Trim();
         }
