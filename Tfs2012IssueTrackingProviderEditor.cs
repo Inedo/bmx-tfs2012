@@ -8,9 +8,10 @@ namespace Inedo.BuildMasterExtensions.TFS2012
 {
     internal sealed class Tfs2012IssueTrackingProviderEditor : ProviderEditorBase
     {
-        ValidatingTextBox txtBaseUrl, txtCustomReleaseNumberFieldName, txtUserName, txtDomain;
-        PasswordTextBox txtPassword;
-        DropDownList ddlAuthentication;
+        private ValidatingTextBox txtBaseUrl, txtCustomReleaseNumberFieldName, txtUserName, txtDomain;
+        private PasswordTextBox txtPassword;
+        private DropDownList ddlAuthentication;
+        private CheckBox chkAllowHtml;
 
         protected override void CreateChildControls()
         {
@@ -38,6 +39,8 @@ namespace Inedo.BuildMasterExtensions.TFS2012
             {
                 Width = Unit.Pixel(270)
             };
+
+            this.chkAllowHtml = new CheckBox { Text = "Allow HTML in issue descriptions" };
             
             ddlAuthentication = new DropDownList();
             ddlAuthentication.Items.Add(new ListItem("System", "system"));
@@ -59,8 +62,9 @@ namespace Inedo.BuildMasterExtensions.TFS2012
                     new StandardFormField("Domain:", txtDomain)
                 );
 
-            CUtil.Add(this,
-                new FormFieldGroup("Team Foundation Server URL",
+            this.Controls.Add(
+                new FormFieldGroup(
+                    "Team Foundation Server URL",
                     "The base URL of the Team Foundation Server, for example: http://tfsserver:port/vdir",
                     false,
                     new StandardFormField(
@@ -85,14 +89,22 @@ namespace Inedo.BuildMasterExtensions.TFS2012
                 ),
                 ffgAuthentication,
                 ffgCredentials,
-                new FormFieldGroup("Custom Release Number Field",
+                new FormFieldGroup(
+                    "Custom Release Number Field",
                     "If you store your TFS work item release numbers in a custom field, enter the full field \"refname\" of the custom field here - otherwise leave this field blank and \"Iteration\" will be used to retrieve them.<br /><br />For more information on custom work item types, visit <a href=\"http://msdn.microsoft.com/en-us/library/ms400654.aspx\" target=\"_blank\">http://msdn.microsoft.com/en-us/library/ms400654.aspx</a>",
                     false,
                     new StandardFormField(
                         "Custom Field:",
-                        txtCustomReleaseNumberFieldName)
+                        txtCustomReleaseNumberFieldName
                     )
-              );
+                ),
+                new FormFieldGroup(
+                    "Options",
+                    "Specify additional options.",
+                    false,
+                    new StandardFormField(string.Empty, this.chkAllowHtml)
+                )
+            );
 
             base.CreateChildControls();
         }
@@ -108,6 +120,7 @@ namespace Inedo.BuildMasterExtensions.TFS2012
             txtUserName.Text = provider.UserName;
             txtPassword.Text = provider.Password;
             txtDomain.Text = provider.Domain;
+            this.chkAllowHtml.Checked = provider.AllowHtmlIssueDescriptions;
 
             if (provider.UseSystemCredentials)
                 ddlAuthentication.SelectedValue = "system";
@@ -127,6 +140,7 @@ namespace Inedo.BuildMasterExtensions.TFS2012
             provider.Password = txtPassword.Text;
             provider.Domain = txtDomain.Text;
             provider.UseSystemCredentials = (ddlAuthentication.SelectedValue == "system");
+            provider.AllowHtmlIssueDescriptions = this.chkAllowHtml.Checked;
 
             return provider;
         }

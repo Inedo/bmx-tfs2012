@@ -14,9 +14,17 @@ namespace Inedo.BuildMasterExtensions.TFS2012
             public static string Closed = "Closed";
         }
 
-        public Tfs2010Issue(WorkItem workItem, string customReleaseNumberFieldName)
+        private bool allowHtml;
+
+        public Tfs2010Issue(WorkItem workItem, string customReleaseNumberFieldName, bool allowHtml)
             : base(workItem.Id.ToString(), workItem.State, workItem.Title, workItem.Description, GetReleaseNumber(workItem, customReleaseNumberFieldName))
         {
+            this.allowHtml = allowHtml;
+        }
+
+        public override IssueTrackerIssue.RenderMode IssueDescriptionRenderMode
+        {
+            get { return this.allowHtml ? RenderMode.Html : RenderMode.Text; }
         }
 
         private static string GetReleaseNumber(WorkItem workItem, string customReleaseNumberFieldName)

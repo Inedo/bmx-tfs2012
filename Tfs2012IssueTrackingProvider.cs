@@ -57,6 +57,11 @@ namespace Inedo.BuildMasterExtensions.TFS2012
         /// </summary>
         [Persistent]
         public bool UseSystemCredentials { get; set; }
+        /// <summary>
+        /// Gets or sets a value indicating whether to allow HTML issue descriptions.
+        /// </summary>
+        [Persistent]
+        public bool AllowHtmlIssueDescriptions { get; set; }
 
         public bool CanAppendIssueDescriptions
         {
@@ -143,7 +148,7 @@ namespace Inedo.BuildMasterExtensions.TFS2012
                 // transform work items returned by SDK into BuildMaster's issues array type
                 return workItems
                     .Cast<WorkItem>()
-                    .Select(wi => new Tfs2010Issue(wi, this.CustomReleaseNumberFieldName))
+                    .Select(wi => new Tfs2010Issue(wi, this.CustomReleaseNumberFieldName, this.AllowHtmlIssueDescriptions))
                     .Where(wi => wi.ReleaseNumber == releaseNumber)
                     .ToArray();
             }
