@@ -21,7 +21,6 @@ namespace Inedo.BuildMasterExtensions.TFS2012
     public class TfsSourceControlProvider : SourceControlProviderBase, ILabelingProvider, IRevisionProvider
     {
         private const string EmptyPathString = "$/";
-        private static readonly string WorkspaceName = "BuildMaster" + Environment.MachineName;
 
         /// <summary>
         /// The base url of the TFS store, should not include collection name, e.g. "http://server:port/tfs"
@@ -339,14 +338,16 @@ namespace Inedo.BuildMasterExtensions.TFS2012
         /// <param name="targetPath">The target path.</param>
         private Workspace GetMappedWorkspace(VersionControlServer server, string sourcePath, string targetPath)
         {
-            var workspaces = server.QueryWorkspaces(WorkspaceName, server.AuthorizedUser, Environment.MachineName);
-            var workspace = workspaces.SingleOrDefault(ws => ws.Name == WorkspaceName);
+            string workspaceName = "BuildMaster" + Guid.NewGuid().ToString().Replace("-", "");
+
+            var workspaces = server.QueryWorkspaces(workspaceName, server.AuthorizedUser, Environment.MachineName);
+            var workspace = workspaces.SingleOrDefault(ws => ws.Name == workspaceName);
             if (workspace != null)
             {
                 workspace.Delete();
             }
 
-            workspace = server.CreateWorkspace(WorkspaceName);
+            workspace = server.CreateWorkspace(workspaceName);
 
             workspace.CreateMapping(new WorkingFolder(sourcePath, targetPath));
 
