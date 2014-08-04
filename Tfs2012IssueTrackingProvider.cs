@@ -226,9 +226,10 @@ namespace Inedo.BuildMasterExtensions.TFS2012
             using (var tfs = this.GetTeamProjectCollection())
             {
                 var workItem = GetWorkItemByID(tfs.GetService<WorkItemStore>(), issueId);
+                workItem.PartialOpen();
                 workItem.Description += Environment.NewLine + textToAppend;
-
                 workItem.Save();
+                workItem.Close();
             }
         }
         /// <summary>
