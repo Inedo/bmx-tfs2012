@@ -11,6 +11,7 @@ namespace Inedo.BuildMasterExtensions.TFS2012
         private ValidatingTextBox txtTeamProject;
         private ValidatingTextBox txtBuildDefinition;
         private CheckBox chkWaitForCompletion;
+        private CheckBox chkFailActionOnBuildFailure;
 
         public override void BindToForm(ActionBase extension)
         {
@@ -19,6 +20,7 @@ namespace Inedo.BuildMasterExtensions.TFS2012
             this.txtTeamProject.Text = action.TeamProject;
             this.txtBuildDefinition.Text = action.BuildDefinition;
             this.chkWaitForCompletion.Checked = action.WaitForCompletion;
+            this.chkFailActionOnBuildFailure.Checked = action.FailActionOnBuildFailure;
         }
 
         public override ActionBase CreateFromForm()
@@ -27,7 +29,8 @@ namespace Inedo.BuildMasterExtensions.TFS2012
             {
                 TeamProject = this.txtTeamProject.Text,
                 BuildDefinition = this.txtBuildDefinition.Text,
-                WaitForCompletion = this.chkWaitForCompletion.Checked
+                WaitForCompletion = this.chkWaitForCompletion.Checked,
+                FailActionOnBuildFailure = this.chkFailActionOnBuildFailure.Checked
             };
         }
 
@@ -49,6 +52,8 @@ namespace Inedo.BuildMasterExtensions.TFS2012
 
             this.chkWaitForCompletion = new CheckBox() { Text = "Wait For Completion" };
 
+            this.chkFailActionOnBuildFailure = new CheckBox { Text = "Fail action on build failure" };
+
             this.Controls.Add(
                 new FormFieldGroup(
                     "Team Project",
@@ -67,6 +72,12 @@ namespace Inedo.BuildMasterExtensions.TFS2012
                     "If checked, the BuildMaster execution will wait until the build is completed before continuing to the next action.",
                     true,
                     new StandardFormField("", this.chkWaitForCompletion)
+                ),
+                new FormFieldGroup(
+                    "Fail Action on Build Failure",
+                    "If checked, the action will fail if the build fails.",
+                    true,
+                    new StandardFormField("", this.chkFailActionOnBuildFailure)
                 )
             );
         }

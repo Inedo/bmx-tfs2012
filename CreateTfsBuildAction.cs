@@ -25,6 +25,12 @@ namespace Inedo.BuildMasterExtensions.TFS2012
         public bool WaitForCompletion { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether the action should fail if the build fails.
+        /// </summary>
+        [Persistent]
+        public bool FailActionOnBuildFailure { get; set; }
+
+        /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
         /// <returns>
@@ -40,8 +46,14 @@ namespace Inedo.BuildMasterExtensions.TFS2012
                 "Create a build of project \"{0}\" using the build definition \"{1}\" in TFS{2}.",
                 this.TeamProject,
                 this.BuildDefinition,
-                this.WaitForCompletion ? " and wait until the build completes." : ""
+                this.WaitForCompletion ? " and wait until the build completes" : "",
+                this.FailActionOnBuildFailure ? " and fail if the build fails." : ""
             );
+        }
+
+        private bool IsBuildSuccessful(IBuildDefinition buildDefinition)
+        {
+            return buildDefinition.LastBuildUri.Equals(buildDefinition.LastGoodBuildUri);
         }
 
         protected override void Execute()
@@ -68,6 +80,11 @@ namespace Inedo.BuildMasterExtensions.TFS2012
                     this.LogDebug("TFS Build status reported: " + ((IQueuedBuild)s).Status);
                 };
                 queuedBuild.WaitForBuildCompletion(TimeSpan.FromSeconds(4), TimeSpan.FromSeconds(this.Timeout));
+
+                if (FailActionOnBuildFailure && !IsBuildSuccessful(buildDefinition))
+                {
+                    throw new InvalidOperationException("Build failed");
+                }
             }
         }
     }
